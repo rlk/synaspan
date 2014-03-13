@@ -51,7 +51,7 @@ image *imgalloc(int w, int h)
 
     if ((I = (image *) malloc(sizeof (image))))
     {
-        if ((I->p = (float *) calloc(3 * w * h, sizeof (float))))
+        if ((I->p = (float *) calloc((size_t) w * (size_t) h, 3 * sizeof (float))))
         {
             I->w = w;
             I->h = h;
@@ -65,21 +65,27 @@ image *imgalloc(int w, int h)
 void imgwrite(image *I, const char *filename)
 {
     TIFF *T;
-    int   y;
 
     if ((T = TIFFOpen(filename, "w")))
     {
+        tsize_t ss, ns, i;
+
         TIFFSetField(T, TIFFTAG_IMAGEWIDTH,      I->w);
         TIFFSetField(T, TIFFTAG_IMAGELENGTH,     I->h);
         TIFFSetField(T, TIFFTAG_BITSPERSAMPLE,   32);
         TIFFSetField(T, TIFFTAG_SAMPLESPERPIXEL, 3);
+        TIFFSetField(T, TIFFTAG_ROWSPERSTRIP,    8);
         TIFFSetField(T, TIFFTAG_PHOTOMETRIC,     PHOTOMETRIC_RGB);
         TIFFSetField(T, TIFFTAG_SAMPLEFORMAT,    SAMPLEFORMAT_IEEEFP);
         TIFFSetField(T, TIFFTAG_ORIENTATION,     ORIENTATION_TOPLEFT);
         TIFFSetField(T, TIFFTAG_PLANARCONFIG,    PLANARCONFIG_CONTIG);
+        TIFFSetField(T, TIFFTAG_COMPRESSION,     COMPRESSION_ADOBE_DEFLATE);
 
-        for (y = 0; y < I->h; y++)
-            TIFFWriteScanline(T, I->p + I->w * y * 3, y, 0);
+        ns = TIFFNumberOfStrips(T);
+        ss = TIFFStripSize(T);
+
+        for (i = 0; i < ns; i++)
+            TIFFWriteEncodedStrip(T, i, I->p + i * I->w * 8 * 3, ss);
 
         TIFFClose(T);
     }
@@ -99,9 +105,10 @@ void imgsum(image *I, int x, int y, float r, float g, float b)
 
     if (0 <= y && y < I->h)
     {
-        I->p[3 * I->w * y + 3 * x + 0] += r;
-        I->p[3 * I->w * y + 3 * x + 1] += g;
-        I->p[3 * I->w * y + 3 * x + 2] += b;
+        size_t i = 3 * (size_t) I->w * (size_t) y + 3 * (size_t) x;
+        I->p[i + 0] += r;
+        I->p[i + 1] += g;
+        I->p[i + 2] += b;
     }
 }
 
