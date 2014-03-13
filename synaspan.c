@@ -85,13 +85,23 @@ void imgwrite(image *I, const char *filename)
     }
 }
 
+static int mod(int a, int b)
+{
+    return (a % b + b) % b;
+}
+
 void imgsum(image *I, int x, int y, float r, float g, float b)
 {
+    if (y <    0) { y =      - 1 - y; x += I->w / 2; }
+    if (y > I->h) { y = I->h - 1 - y; x += I->w / 2; }
+
+    x = mod(x, I->w);
+
     if (0 <= y && y < I->h)
     {
-        I->p[3 * I->w * y + 3 * (x % I->w) + 0] += r;
-        I->p[3 * I->w * y + 3 * (x % I->w) + 1] += g;
-        I->p[3 * I->w * y + 3 * (x % I->w) + 2] += b;
+        I->p[3 * I->w * y + 3 * x + 0] += r;
+        I->p[3 * I->w * y + 3 * x + 1] += g;
+        I->p[3 * I->w * y + 3 * x + 2] += b;
     }
 }
 
