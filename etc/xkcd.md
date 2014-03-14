@@ -10,7 +10,7 @@ Here's a map of the Hipparcos catalog rendered normally and saved with a gamma v
 
 	synaspan -w 2048 -h 1024 -G -H hip_main.dat -g 4 -o luminance.tif
 
-![](luminance-small.jpg)
+![](luminance-720.jpg)
 
 [2048 &times; 1024 version](luminance.jpg)
 
@@ -22,7 +22,7 @@ Now here's the Hipparcos catalog rendering in "xkcd mode" with the trigonometric
 
 	synaspan -w 2048 -h 1024 -G -H hip_main.dat -x -g 4 -o proximity.tif
 
-![](proximity-small.jpg)
+![](proximity-720.jpg)
 
 [2048 &times; 1024 version](proximity.jpg)
 
@@ -32,7 +32,7 @@ The result is a rendering of the sky based strictly on a star's proximity, not i
 
 Here's the opposite. Magnitude is given by the reciprocol of the parallax, so brighter stars are farther away.
 
-![](distance-small.jpg)
+![](distance-720.jpg)
 
 [2048 &times; 1024 version](distance.jpg)
 
