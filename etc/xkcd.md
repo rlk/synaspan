@@ -32,6 +32,8 @@ The result is a rendering of the sky based strictly on a star's proximity, not i
 
 Here's the opposite. Magnitude is given by the reciprocol of the parallax, so brighter stars are farther away.
 
+	synaspan -w 2048 -h 1024 -G -H hip_main.dat -X -g 4 -o distance.tif
+
 ![](distance-720.jpg)
 
 [2048 &times; 1024 version](distance.jpg)
