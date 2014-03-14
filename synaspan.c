@@ -62,6 +62,16 @@ image *imgalloc(int w, int h)
     return NULL;
 }
 
+void imggamma(image *I, float gamma)
+{
+    size_t w = (size_t) I->w;
+    size_t h = (size_t) I->h;
+    size_t i;
+
+    for (i = 0; i < 3 * w * h; i++)
+        I->p[i] = pow(I->p[i], gamma);
+}
+
 void imgwrite(image *I, const char *filename)
 {
     TIFF *T;
@@ -238,7 +248,7 @@ static void drawstar(image *I, float r, float d,
 
 /*----------------------------------------------------------------------------*/
 
-static void tyc(image *I, const char *name, int g, float s, float m)
+static void tyc(image *I, const char *name, int G, float s, float m)
 {
     FILE  *stream;
 
@@ -262,7 +272,7 @@ static void tyc(image *I, const char *name, int g, float s, float m)
                 r = toradians(r);
                 d = toradians(d);
 
-                if (g) togalactic(&r, &d);
+                if (G) togalactic(&r, &d);
 
                 drawstar(I, r, d, b, v, s, m);
             }
@@ -271,7 +281,7 @@ static void tyc(image *I, const char *name, int g, float s, float m)
     }
 }
 
-static void hip(image *I, const char *name, int g, float s, float m)
+static void hip(image *I, const char *name, int G, float s, float m)
 {
     FILE  *stream;
 
@@ -293,7 +303,7 @@ static void hip(image *I, const char *name, int g, float s, float m)
                 r = toradians(r);
                 d = toradians(d);
 
-                if (g) togalactic(&r, &d);
+                if (G) togalactic(&r, &d);
 
                 drawstar(I, r, d, b, v, s, m);
             }
@@ -312,7 +322,8 @@ static int usage(const char *exe)
                     "\t-h 2048 .......... output height\n"
                     "\t-s 1.0 ........... star shape standard deviation\n"
                     "\t-m 6.0 ........... magnitude of 1-pixel star\n"
-                    "\t-g ............... output in galactic coordinates\n"
+                    "\t-g 1.0 ........... gamma correction\n"
+                    "\t-G ............... output in galactic coordinates\n"
                     , exe);
     return -1;
 }
@@ -324,12 +335,13 @@ int main(int argc, char **argv)
     char *o = "out.tif";
     int   w = 4096;
     int   h = 2048;
-    int   g = 0;
+    int   G = 0;
+    float g = 1.0f;
     float s = 1.0f;
     float m = 6.0f;
     int   c;
 
-    while ((c = getopt(argc, argv, "go:w:h:s:m:T:H:")) != -1)
+    while ((c = getopt(argc, argv, "Go:w:h:s:m:g:T:H:")) != -1)
 
         switch (c)
         {
@@ -340,15 +352,17 @@ int main(int argc, char **argv)
             case 'h': h = (int) strtol(optarg, 0, 0); break;
             case 's': s =       strtof(optarg, 0);    break;
             case 'm': m =       strtof(optarg, 0);    break;
-            case 'g': g = 1;                          break;
+            case 'g': g =       strtof(optarg, 0);    break;
+            case 'G': G = 1;                          break;
             case '?': return usage(argv[0]);
         }
 
     image *I = imgalloc(w, h);
 
-    if (T) tyc(I, T, g, s, m);
-    if (H) hip(I, H, g, s, m);
+    if (T) tyc(I, T, G, s, m);
+    if (H) hip(I, H, G, s, m);
 
+    imggamma(I, g);
     imgwrite(I, o);
     imgfree(I);
 
