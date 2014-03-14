@@ -203,11 +203,12 @@ static void tocolor(float c, float *r, float *g, float *b)
 
 static void drawstar(image *I, float r, float d,
                                float b, float v,
-                               float s, float m)
+                               float s, float m, float p, int X)
 {
     int x = floorf(I->w * ( twopi - r) / twopi);
     int y = floorf(I->h * (halfpi - d) /    pi);
 
+    float A;
     float R;
     float G;
     float B;
@@ -220,12 +221,14 @@ static void drawstar(image *I, float r, float d,
     tocolor(BV, &R, &G, &B);
 
     /* The intensity of a star is the "volume" of pixels it should fill. */
+    /* Compute the amplitude of that Gaussian volume.                   */
 
-    float intensity = powf(10.0, (m - V) / 2.5);
-
-    /* Compute the amplitude of that Gaussian. */
-
-    float A = intensity / (twopi * s * s);
+    switch (X)
+    {
+        case 0: A = powf(10.0, (m - V) / 2.5) / (twopi * s * s); break;
+        case 1: A = 0.02f * fabsf(p);                            break;
+        case 2: A = 1.00f / fabsf(p);                            break;
+    }
 
     /* Draw over an area of 4 sigma. */
 
@@ -274,14 +277,14 @@ static void tyc(image *I, const char *name, int G, float s, float m)
 
                 if (G) togalactic(&r, &d);
 
-                drawstar(I, r, d, b, v, s, m);
+                drawstar(I, r, d, b, v, s, m, 0, 0);
             }
 
         fclose(stream);
     }
 }
 
-static void hip(image *I, const char *name, int G, float s, float m)
+static void hip(image *I, const char *name, int G, float s, float m, int X)
 {
     FILE  *stream;
 
@@ -291,6 +294,7 @@ static void hip(image *I, const char *name, int G, float s, float m)
         float d;  /* Declination  */
         float b;  /* B magnitude  */
         float v;  /* V magnitude  */
+        float p;  /* Parallax */
 
         char buf[1024];
 
@@ -298,14 +302,16 @@ static void hip(image *I, const char *name, int G, float s, float m)
             if (sscanf(buf +  51, "%f", &r) == 1 &&
                 sscanf(buf +  64, "%f", &d) == 1 &&
                 sscanf(buf + 217, "%f", &b) == 1 &&
-                sscanf(buf + 230, "%f", &v) == 1)
+                sscanf(buf + 230, "%f", &v) == 1 &&
+                sscanf(buf +  79, "%f", &p) == 1)
             {
                 r = toradians(r);
                 d = toradians(d);
 
                 if (G) togalactic(&r, &d);
 
-                drawstar(I, r, d, b, v, s, m);
+                if (X == 0 || p > 0)
+                    drawstar(I, r, d, b, v, s, m, p, X);
             }
 
         fclose(stream);
@@ -324,6 +330,8 @@ static int usage(const char *exe)
                     "\t-m 6.0 ........... magnitude of 1-pixel star\n"
                     "\t-g 1.0 ........... gamma correction\n"
                     "\t-G ............... output in galactic coordinates\n"
+                    "\t-x ............... use parallax as magnitude (XKCD 1342)\n"
+                    "\t-X ............... use distance as magnitude (XKCD 1342 inverse)\n"
                     , exe);
     return -1;
 }
@@ -336,12 +344,13 @@ int main(int argc, char **argv)
     int   w = 4096;
     int   h = 2048;
     int   G = 0;
+    int   X = 0;
     float g = 1.0f;
     float s = 1.0f;
     float m = 6.0f;
     int   c;
 
-    while ((c = getopt(argc, argv, "Go:w:h:s:m:g:T:H:")) != -1)
+    while ((c = getopt(argc, argv, "GxXo:w:h:s:m:g:T:H:")) != -1)
 
         switch (c)
         {
@@ -354,13 +363,15 @@ int main(int argc, char **argv)
             case 'm': m =       strtof(optarg, 0);    break;
             case 'g': g =       strtof(optarg, 0);    break;
             case 'G': G = 1;                          break;
+            case 'x': X = 1;                          break;
+            case 'X': X = 2;                          break;
             case '?': return usage(argv[0]);
         }
 
     image *I = imgalloc(w, h);
 
     if (T) tyc(I, T, G, s, m);
-    if (H) hip(I, H, G, s, m);
+    if (H) hip(I, H, G, s, m, X);
 
     imggamma(I, g);
     imgwrite(I, o);
