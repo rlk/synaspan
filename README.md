@@ -6,7 +6,7 @@ SYNASPAN is a short C program that synthesizes an all-sky panorama from Hipparco
 
 ## Usage
 
-    synaspan [-g] [-H dat] [-T dat] [-o tif] [-w w] [-h h] [-s s] [-m m]
+    synaspan [-G] [-H dat] [-T dat] [-o tif] [-w w] [-h h] [-s s] [-m m] [-g g]
         -H NONE .......... Hipparcos catalog
         -T NONE .......... Tycho-2 catalog
         -o out.tif ....... output TIFF file name
@@ -14,7 +14,8 @@ SYNASPAN is a short C program that synthesizes an all-sky panorama from Hipparco
         -h 2048 .......... output height
         -s 1.0 ........... star shape standard deviation
         -m 6.0 ........... magnitude of 1-pixel star
-        -g ............... output in galactic coordinates
+        -g 1.0 ........... gamma correction
+        -G ............... output in galactic coordinates
 
 Stars are rendered as 2D Gaussian functions. The `-s` option gives the standard deviation and thus determines the size of each star. The `-m` option determines the overall brightness of the rendering by giving the stellar magnitude of a star that would be rendered with a "volume" of 1. Specifically, a star with magnitude `m` will be rendered as a 2D Gaussian function with standard deviation `s` and integral 1. All other stars will be scaled relative to this definition. Increase `s` to make the stars bigger and increase `m` to make them brighter.
 

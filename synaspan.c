@@ -314,7 +314,7 @@ static void hip(image *I, const char *name, int G, float s, float m)
 
 static int usage(const char *exe)
 {
-    fprintf(stderr, "Usage: %s [-g] [-H dat] [-T dat] [-o tif] [-w w] [-h h] [-s s] [-m m]\n"
+    fprintf(stderr, "Usage: %s [-G] [-H dat] [-T dat] [-o tif] [-w w] [-h h] [-s s] [-m m] [-g g]\n"
                     "\t-H NONE .......... Hipparcos catalog\n"
                     "\t-T NONE .......... Tycho-2 catalog\n"
                     "\t-o out.tif ....... output TIFF file name\n"
