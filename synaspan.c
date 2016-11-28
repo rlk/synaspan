@@ -208,7 +208,7 @@ static void drawstar(image *I, float r, float d,
     int x = floorf(I->w * ( twopi - r) / twopi);
     int y = floorf(I->h * (halfpi - d) /    pi);
 
-    float A;
+    float A = 0.0f;
     float R;
     float G;
     float B;
